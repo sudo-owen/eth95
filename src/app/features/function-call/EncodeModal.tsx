@@ -51,12 +51,15 @@ const EncodeModal = ({ closeModal, args, types, inputs, opts }) => {
           {types.map((type, idx) => {
             const arg = args[idx];
             const label = inputs[idx].name;
+            const displayValue = type === 'tuple' && Array.isArray(arg)
+              ? `[${arg.join(', ')}]`
+              : arg;
             return (
               <div key={label}>
                 <div>
                   <strong>{label}</strong> (<i>{type}</i>)
                 </div>
-                <div>{arg}</div>
+                <div>{displayValue}</div>
                 <br />
               </div>
             );

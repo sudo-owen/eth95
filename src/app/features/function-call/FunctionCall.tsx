@@ -49,7 +49,7 @@ const FunctionForm = ({ fn }) => {
   const [showGasLimit, setShowGasLimit] = useState(false);
 
   // gather form data and its respective types
-  const { args, types } = useFormData(fn, formState);
+  const { args, types, flattenedInputs } = useFormData(fn, formState);
 
   // set options for transaction
   const opts: any = {};
@@ -72,8 +72,8 @@ const FunctionForm = ({ fn }) => {
     );
   }
 
-  const handleInputChange = (idx, value) => {
-    setFormState((prev) => ({ ...prev, [idx]: value }));
+  const handleInputChange = (key, value) => {
+    setFormState((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmit = async () => {
@@ -88,23 +88,43 @@ const FunctionForm = ({ fn }) => {
   return (
     <Container label="Call function">
       <Content>
-        {fn.inputs?.map((input, idx) => (
-          <div key={input.name} style={{ marginBottom: `1rem` }}>
-            <div>{input.name}:</div>
-            <Input              
-              type={
-                input.type.substring(0, 4) === 'uint' &&
-                !input.type.includes('[]')
-                  ? 'number'
-                  : 'text'
-              }
-              placeholder={input.type}
-              value={formState[idx] || ""}
-              onChange={(e) => handleInputChange(idx, e.target.value)}
-              className="function-form-item"
-            />
-          </div>
-        ))}
+        {flattenedInputs?.map((input, idx) => {
+          const inputKey = input.isComponent
+            ? `${input.parentIndex}.${input.componentIndex}`
+            : input.parentIndex;
+
+          return (
+            <div key={input.fullPath} style={{
+              marginBottom: `1rem`,
+              marginLeft: input.isComponent ? '20px' : '0px'
+            }}>
+              <div>
+                {input.isComponent ? (
+                  <>
+                    <span style={{ color: '#666', fontSize: '12px' }}>
+                      {input.parentName}.
+                    </span>
+                    {input.name}
+                  </>
+                ) : (
+                  input.name
+                )}:
+              </div>
+              <Input
+                type={
+                  input.type.substring(0, 4) === 'uint' &&
+                  !input.type.includes('[]')
+                    ? 'number'
+                    : 'text'
+                }
+                placeholder={input.type}
+                value={formState[inputKey] || ""}
+                onChange={(e) => handleInputChange(inputKey, e.target.value)}
+                className="function-form-item"
+              />
+            </div>
+          );
+        })}
         {fn.stateMutability === "payable" && (
           <>
             <div>ETH to send:</div>

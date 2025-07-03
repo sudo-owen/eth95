@@ -28,11 +28,27 @@ const useCallFunction = (args, types, fn, opts) => {
   };
 
   const callFunction = async () => {
-    // handle array and int types
+    // handle array, int, and tuple types
     const processedArgs = args.map((arg, idx) => {
       const type = types[idx];
       if (type.slice(-2) === "[]") return JSON.parse(arg);
       if (type.substring(0, 4) === "uint") return ethers.BigNumber.from(arg);
+      if (type === "tuple" && Array.isArray(arg)) {
+        // Process each component of the tuple
+        return arg.map((component, compIdx) => {
+          const input = fn.inputs[idx];
+          if (input && input.components && input.components[compIdx]) {
+            const compType = input.components[compIdx].type;
+            if (compType.substring(0, 4) === "uint") {
+              return ethers.BigNumber.from(component);
+            }
+            if (compType.slice(-2) === "[]") {
+              return JSON.parse(component);
+            }
+          }
+          return component;
+        });
+      }
       return arg;
     });
 
