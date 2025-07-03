@@ -77,11 +77,33 @@ const FunctionInfo = ({ fn }) => {
             <div>
               <b>Inputs:</b>
             </div>
-            {fn.inputs.map((input, i) => (
-              <ParamItem key={input.name}>
-                [{i}]<i>{input.type}</i> {input.name}
-              </ParamItem>
-            ))}
+            {fn.inputs.map((input, i) => {
+              if (input.type === "tuple") {
+                return (
+                  <>
+                    <ParamItem key={input.name}>
+                      [{i}]<i>{input.type}</i> {input.name} ({input.internalType})
+                    </ParamItem>
+                    {input?.components?.map((comp, j) => {
+                      return (
+                        <ParamItem
+                          key={comp.name}
+                          style={{ marginLeft: "36px" }}
+                        >
+                          [{j}]<i>{comp.type}</i> {comp.name}
+                        </ParamItem>
+                      );
+                    })}
+                  </>
+                );
+              } else {
+                return (
+                  <ParamItem key={input.name}>
+                    [{i}]<i>{input.type}</i> {input.name}
+                  </ParamItem>
+                );
+              }
+            })}
           </>
         )}
 
